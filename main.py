@@ -6,6 +6,7 @@ import math
 import scipy as sp
 import scipy.ndimage
 import csv
+import cv2
 
 # read GeoTiff Data using rasterio
 dataset = rasterio.open('TroutPassAerial.tiff')
@@ -46,13 +47,27 @@ dim = int(math.sqrt(siz/2))
 assert dim*dim*2 == siz, 'Invalid file size'
 
 hgt_data = np.fromfile(fn, np.dtype('>i2'), dim*dim).reshape((dim, dim))
-# print(hgt_data)
+
+# clip data
+bound_x, bound_y = transform(dataset.crs, {'init': 'EPSG:4326'},
+                     [bounds.left, bounds.right], [bounds.top, bounds.bottom])
+
+startX = int((bound_x[0] - start_lon) * 3600)
+endX = int((bound_x[1] - start_lon) * 3600)
+
+startY = int((bound_y[0] - start_lat) * 3600)
+endY = int((bound_y[1] - start_lat) * 3600)
+
+clipped = hgt_data[endY:startY, startX:endX]
+resized = cv2.resize(clipped, (dataset.width, dataset.height), interpolation = cv2.INTER_AREA)
+
+
 sigma_y = 40.0
 sigma_x = 40.0
 sigma = [sigma_y, sigma_x]
 
 # Smooth the elevation layer
-hgt_smooth_data = sp.ndimage.filters.gaussian_filter(hgt_data, sigma, mode='constant')
+hgt_smooth_data = sp.ndimage.filters.gaussian_filter(resized, sigma, mode='constant')
 
 
 file = open('geo_spatial.csv', 'w', newline='')
@@ -64,13 +79,7 @@ idy = 0
 for r1, g1, b1, x1, y1, lon1, lat1 in zip(r, g, b, x, y, lon, lat):
     idx = 0
     for r2, g2, b2, x2, y2, lon2, lat2 in zip(r1, g1, b1, x1, y1, lon1, lat1):
-        gap_lon = lon2 - start_lon
-        gap_lat = lat2 - start_lat
-
-        hgt_x = int(gap_lon * 3600)
-        hgt_y = int(gap_lat * 3600)
-
-        z2 = hgt_smooth_data[hgt_y][hgt_x]
+        z2 = hgt_smooth_data[idy][idx]
         idx += 1
 
         # print(x2, y2, z2, r2, g2, b2)
