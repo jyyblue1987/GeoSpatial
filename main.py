@@ -3,8 +3,6 @@ from rasterio.warp import transform
 import os
 import numpy as np
 import math
-import scipy as sp
-import scipy.ndimage
 import csv
 import cv2
 import matplotlib.pyplot as plt
@@ -56,6 +54,8 @@ sigma_x = 40.0
 sigma = [sigma_y, sigma_x]
 
 # hgt_data = sp.ndimage.filters.gaussian_filter(hgt_data, sigma, mode='constant')
+
+hgt_data = cv2.GaussianBlur(hgt_data, (5, 5), 0)
 
 # clip data
 bound_x, bound_y = transform(dataset.crs, {'init': 'EPSG:4326'},
