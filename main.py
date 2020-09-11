@@ -48,6 +48,8 @@ assert dim*dim*2 == siz, 'Invalid file size'
 
 hgt_data = np.fromfile(fn, np.dtype('>i2'), dim*dim).reshape((dim, dim))
 
+hgt_data = hgt_data.astype('float')
+
 # clip data
 bound_x, bound_y = transform(dataset.crs, {'init': 'EPSG:4326'},
                      [bounds.left, bounds.right], [bounds.top, bounds.bottom])
@@ -59,8 +61,8 @@ startY = int((bound_y[0] - start_lat) * 3600)
 endY = int((bound_y[1] - start_lat) * 3600)
 
 clipped = hgt_data[endY:startY, startX:endX]
-resized = cv2.resize(clipped, (dataset.width, dataset.height), interpolation = cv2.INTER_AREA)
-
+resized = cv2.resize(clipped, (dataset.width, dataset.height), interpolation=cv2.INTER_LINEAR)
+resized = np.flipud(resized)
 
 sigma_y = 40.0
 sigma_x = 40.0
