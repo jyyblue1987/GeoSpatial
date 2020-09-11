@@ -51,6 +51,12 @@ hgt_data = np.fromfile(fn, np.dtype('>i2'), dim*dim).reshape((dim, dim))
 
 hgt_data = hgt_data.astype('float')
 
+sigma_y = 40.0
+sigma_x = 40.0
+sigma = [sigma_y, sigma_x]
+
+# hgt_data = sp.ndimage.filters.gaussian_filter(hgt_data, sigma, mode='constant')
+
 # clip data
 bound_x, bound_y = transform(dataset.crs, {'init': 'EPSG:4326'},
                      [bounds.left, bounds.right], [bounds.top, bounds.bottom])
@@ -62,42 +68,35 @@ startY = int((bound_y[0] - start_lat) * 3600)
 endY = int((bound_y[1] - start_lat) * 3600)
 
 clipped = hgt_data[endY:startY, startX:endX]
-resized = cv2.resize(clipped, (dataset.width, dataset.height), interpolation=cv2.INTER_LINEAR)
+resized = cv2.resize(clipped, (dataset.width, dataset.height), interpolation=cv2.INTER_CUBIC)
 resized = np.flipud(resized)
-
-sigma_y = 40.0
-sigma_x = 40.0
-sigma = [sigma_y, sigma_x]
-
-# Smooth the elevation layer
-hgt_smooth_data = sp.ndimage.filters.gaussian_filter(resized, sigma, mode='constant')
 
 file = open('geo_spatial.csv', 'w', newline='')
 writer = csv.writer(file)
 writer.writerow(["X", "Y", "Z", "R", "G", "B"])
 
-# idx = 0
-# idy = 0
-# for r1, g1, b1, x1, y1, lon1, lat1 in zip(r, g, b, x, y, lon, lat):
-#     idx = 0
-#     for r2, g2, b2, x2, y2, lon2, lat2 in zip(r1, g1, b1, x1, y1, lon1, lat1):
-#         z2 = hgt_smooth_data[idy][idx]
-#         idx += 1
-#
-#         # print(x2, y2, z2, r2, g2, b2)
-#         writer.writerow([x2, y2, z2, r2, g2, b2])
-#
-#     idy += 1
-#
-# print(idx, idy)
+idx = 0
+idy = 0
+for r1, g1, b1, x1, y1, lon1, lat1 in zip(r, g, b, x, y, lon, lat):
+    idx = 0
+    for r2, g2, b2, x2, y2, lon2, lat2 in zip(r1, g1, b1, x1, y1, lon1, lat1):
+        z2 = resized[idy][idx]
+        idx += 1
+
+        # print(x2, y2, z2, r2, g2, b2)
+        writer.writerow([x2, y2, z2, r2, g2, b2])
+
+    idy += 1
+
+print(idx, idy)
 
 # Plot X,Y,Z
 fig = plt.figure()
 ax = plt.axes(projection='3d')
-# ax.contour3D(x, y, resized, 50, cmap='binary')
+ax.contour3D(x, y, resized, 50, cmap='binary')
 
-ax.plot_surface(x, y, resized, rstride=1, cstride=1,
-                cmap='viridis', edgecolor='none')
+# ax.plot_surface(x, y, resized, rstride=1, cstride=1,
+#                 cmap='viridis', edgecolor='none')
 
 ax.set_xlabel('x')
 ax.set_ylabel('y')
