@@ -5,6 +5,7 @@ import numpy as np
 import math
 import scipy as sp
 import scipy.ndimage
+import csv
 
 # read GeoTiff Data using rasterio
 dataset = rasterio.open('TroutPassAerial.tiff')
@@ -53,6 +54,11 @@ sigma = [sigma_y, sigma_x]
 # Smooth the elevation layer
 hgt_smooth_data = sp.ndimage.filters.gaussian_filter(hgt_data, sigma, mode='constant')
 
+
+file = open('geo_spatial.csv', 'w', newline='')
+writer = csv.writer(file)
+writer.writerow(["X", "Y", "Z", "R", "G", "B"])
+
 idx = 0
 idy = 0
 for r1, g1, b1, x1, y1, lon1, lat1 in zip(r, g, b, x, y, lon, lat):
@@ -67,7 +73,8 @@ for r1, g1, b1, x1, y1, lon1, lat1 in zip(r, g, b, x, y, lon, lat):
         z2 = hgt_smooth_data[hgt_y][hgt_x]
         idx += 1
 
-        print(x2, y2, z2, r2, g2, b2)
+        # print(x2, y2, z2, r2, g2, b2)
+        writer.writerow([x2, y2, z2, r2, g2, b2])
 
     idy += 1
 
