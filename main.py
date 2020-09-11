@@ -6,6 +6,7 @@ import math
 import csv
 import cv2
 import matplotlib.pyplot as plt
+import re
 
 # read GeoTiff Data using rasterio
 dataset = rasterio.open('TroutPassAerial4326.tiff')
@@ -37,8 +38,13 @@ lat = np.asarray(lat).reshape((dataset.height, dataset.width))
 
 # read hgt data
 fn = 'N38W079.hgt'
-start_lon = -79
-start_lat = 38
+matched = re.match(r'N(.*)W(.*).hgt', fn, re.M|re.I)
+if matched:
+    start_lon = -int(matched.group(2))
+    start_lat = int(matched.group(1))
+else:
+    start_lon = -79
+    start_lat = 38
 
 siz = os.path.getsize(fn)
 dim = int(math.sqrt(siz/2))
