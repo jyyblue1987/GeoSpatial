@@ -68,9 +68,12 @@ startY = int((bound_y[0] - start_lat) * 3600)
 endY = int((bound_y[1] - start_lat) * 3600)
 
 clipped = hgt_data[endY:startY, startX:endX]
+
+# upsampling
 resized = cv2.resize(clipped, (dataset.width, dataset.height), interpolation=cv2.INTER_CUBIC)
 resized = np.flipud(resized)
 
+# Write to CSV file
 file = open('geo_spatial.csv', 'w', newline='')
 writer = csv.writer(file)
 writer.writerow(["X", "Y", "Z", "R", "G", "B"])
@@ -87,6 +90,8 @@ for r1, g1, b1, x1, y1, lon1, lat1 in zip(r, g, b, x, y, lon, lat):
         writer.writerow([x2, y2, z2, r2, g2, b2])
 
     idy += 1
+
+file.close()
 
 print(idx, idy)
 
