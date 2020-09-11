@@ -8,7 +8,7 @@ import cv2
 import matplotlib.pyplot as plt
 
 # read GeoTiff Data using rasterio
-dataset = rasterio.open('TroutPassAerial.tiff')
+dataset = rasterio.open('TroutPassAerial4326.tiff')
 print(dataset.profile)
 
 r = dataset.read(1)
