@@ -7,6 +7,7 @@ import scipy as sp
 import scipy.ndimage
 import csv
 import cv2
+import matplotlib.pyplot as plt
 
 # read GeoTiff Data using rasterio
 dataset = rasterio.open('TroutPassAerial.tiff')
@@ -71,27 +72,41 @@ sigma = [sigma_y, sigma_x]
 # Smooth the elevation layer
 hgt_smooth_data = sp.ndimage.filters.gaussian_filter(resized, sigma, mode='constant')
 
-
 file = open('geo_spatial.csv', 'w', newline='')
 writer = csv.writer(file)
 writer.writerow(["X", "Y", "Z", "R", "G", "B"])
 
-idx = 0
-idy = 0
-for r1, g1, b1, x1, y1, lon1, lat1 in zip(r, g, b, x, y, lon, lat):
-    idx = 0
-    for r2, g2, b2, x2, y2, lon2, lat2 in zip(r1, g1, b1, x1, y1, lon1, lat1):
-        z2 = hgt_smooth_data[idy][idx]
-        idx += 1
+# idx = 0
+# idy = 0
+# for r1, g1, b1, x1, y1, lon1, lat1 in zip(r, g, b, x, y, lon, lat):
+#     idx = 0
+#     for r2, g2, b2, x2, y2, lon2, lat2 in zip(r1, g1, b1, x1, y1, lon1, lat1):
+#         z2 = hgt_smooth_data[idy][idx]
+#         idx += 1
+#
+#         # print(x2, y2, z2, r2, g2, b2)
+#         writer.writerow([x2, y2, z2, r2, g2, b2])
+#
+#     idy += 1
+#
+# print(idx, idy)
 
-        # print(x2, y2, z2, r2, g2, b2)
-        writer.writerow([x2, y2, z2, r2, g2, b2])
+# Plot X,Y,Z
+fig = plt.figure()
+ax = plt.axes(projection='3d')
+# ax.contour3D(x, y, resized, 50, cmap='binary')
 
-    idy += 1
+ax.plot_surface(x, y, resized, rstride=1, cstride=1,
+                cmap='viridis', edgecolor='none')
 
-print(idx, idy)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
 
+plt.show()
 
+# input
+input1 = input()
 
 
 
